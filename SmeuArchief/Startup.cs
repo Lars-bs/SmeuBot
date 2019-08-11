@@ -4,9 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SmeuArchief.Database;
 using SmeuArchief.Services;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SmeuArchief
@@ -21,6 +19,7 @@ namespace SmeuArchief
         {
             if (!File.Exists(settingspath))
             {
+                SimpleSettings.Settings.ToFile<Settings>(null, settingspath);
                 Console.WriteLine("No settings file was found, so a default one was created instead. please edit this file and restart the bot.");
                 Environment.Exit(-1);
             }
@@ -29,7 +28,7 @@ namespace SmeuArchief
             {
                 Settings = SimpleSettings.Settings.FromFile<Settings>(settingspath);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine($"Attempted to read settings from settings file, but failed: {e.Message}\n{e.StackTrace}");
                 Environment.Exit(-1);
@@ -50,6 +49,7 @@ namespace SmeuArchief
             IServiceProvider provider = services.BuildServiceProvider();
             provider.GetRequiredService<LogService>();
             provider.GetRequiredService<CommandHandler>();
+            provider.GetRequiredService<SmeuService>();
 
             await provider.GetRequiredService<StartupService>().StartAsync();
             await Task.Delay(-1);
