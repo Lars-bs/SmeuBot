@@ -28,6 +28,31 @@ namespace SmeuArchief.Services
             client.MessageReceived += Client_MessageReceived;
         }
 
+        public async Task SuspendAsync(SocketUser user, ISocketMessageChannel responseChannel)
+        {
+            Suspension suspension;
+            using (SmeuContext context = services.GetRequiredService<SmeuContext>())
+            {
+                suspension = (from s in context.Suspensions
+                              where s.User == user.Id
+                              select s).FirstOrDefault();
+            }
+
+            if (suspension != null)
+            {
+                await responseChannel.SendMessageAsync("Deze gebruiker is al af!");
+            }
+            else
+            {
+                using (SmeuContext context = services.GetRequiredService<SmeuContext>())
+                {
+                    context.Suspensions.Add(new Suspension { User = user.Id });
+                    await context.SaveChangesAsync();
+                }
+                await responseChannel.SendMessageAsync($"{user.Mention} is **af**!");
+            }
+        }
+
         public async Task UnsuspendAsync(SocketUser user, ISocketMessageChannel responseChannel)
         {
             Suspension suspension;
@@ -89,13 +114,7 @@ namespace SmeuArchief.Services
             {
                 await msg.AddReactionAsync(denyEmoji);
                 await msg.Channel.SendMessageAsync($"{smeu} is al genoemd door {client.GetUser(submission.Author).Mention} op {submission.Date}");
-                await msg.Channel.SendMessageAsync($"{msg.Author.Mention} is nu **af**!");
-
-                using (SmeuContext database = services.GetRequiredService<SmeuContext>())
-                {
-                    database.Suspensions.Add(new Suspension { User = msg.Author.Id });
-                    await database.SaveChangesAsync();
-                }
+                await SuspendAsync(msg.Author, msg.Channel);
             }
             else
             {
