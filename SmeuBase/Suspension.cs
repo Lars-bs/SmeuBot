@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SmeuArchief.Database
+namespace SmeuBase
 {
     public class Suspension
     {

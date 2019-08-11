@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using SmeuArchief.Database;
+using SmeuBase;
 using System;
 using System.Linq;
 using System.Threading.Tasks;

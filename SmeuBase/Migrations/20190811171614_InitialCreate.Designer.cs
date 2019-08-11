@@ -2,21 +2,23 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using SmeuArchief.Database;
+using SmeuBase;
 
-namespace SmeuArchief.Migrations
+namespace SmeuBase.Migrations
 {
     [DbContext(typeof(SmeuContext))]
-    partial class SmeuContextModelSnapshot : ModelSnapshot
+    [Migration("20190811171614_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
 
-            modelBuilder.Entity("SmeuArchief.Database.Submission", b =>
+            modelBuilder.Entity("SmeuBase.Submission", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -33,7 +35,7 @@ namespace SmeuArchief.Migrations
                     b.ToTable("Submissions");
                 });
 
-            modelBuilder.Entity("SmeuArchief.Database.Suspension", b =>
+            modelBuilder.Entity("SmeuBase.Suspension", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();

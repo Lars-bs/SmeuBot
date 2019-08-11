@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace SmeuArchief.Migrations
+namespace SmeuBase.Migrations
 {
     public partial class InitialCreate : Migration
     {

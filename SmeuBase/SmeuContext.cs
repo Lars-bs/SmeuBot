@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace SmeuArchief.Database
+namespace SmeuBase
 {
     public class SmeuContext : DbContext
     {

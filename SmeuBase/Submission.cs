@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SmeuArchief.Database
+namespace SmeuBase
 {
     public class Submission
     {
