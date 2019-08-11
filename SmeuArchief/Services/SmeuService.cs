@@ -28,16 +28,14 @@ namespace SmeuArchief.Services
             client.MessageReceived += Client_MessageReceived;
         }
 
-        private Task Client_MessageReceived(SocketMessage arg)
+        private async Task Client_MessageReceived(SocketMessage arg)
         {
             // is this a smeu?
-            if (!(arg is SocketUserMessage msg)) { return Task.CompletedTask; }
-            if (msg.Author.IsBot) { return Task.CompletedTask; }
-            if (msg.Channel.Id != settings.SmeuChannelId) { return Task.CompletedTask; }
+            if (!(arg is SocketUserMessage msg)) { return; }
+            if (msg.Author.IsBot) { return; }
+            if (msg.Channel.Id != settings.SmeuChannelId) { return; }
 
-            return Add(msg).ContinueWith(
-                async (t) => await logger.LogAsync(new LogMessage(LogSeverity.Error, "SmeuService", $"Attempted to add smeu to collection, but failed: {t.Exception?.InnerException.Message}\n{t.Exception?.InnerException.StackTrace}")),
-                TaskContinuationOptions.OnlyOnFaulted);
+            await Add(msg);
         }
 
         public async Task SuspendAsync(SocketUser user, ISocketMessageChannel responseChannel)

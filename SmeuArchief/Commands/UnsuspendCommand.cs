@@ -21,17 +21,16 @@ namespace SmeuArchief.Commands
         }
 
         [Command("tik"), Summary("Tik iemand aan zodat ie weer mee mag doen.")]
-        public Task Unsuspend(SocketUser user)
+        public async Task Unsuspend(SocketUser user)
         {
             if(user == Context.User)
             {
-                return Context.Channel.SendMessageAsync("Het is niet toegestaan om jezelf af te tikken, stiekemerd!");
+                // users are not allowed to unsuspend themselves
+                await Context.Channel.SendMessageAsync("Het is niet toegestaan om jezelf af te tikken, stiekemerd!");
+                return;
             }
 
-            return smeuservice.UnsuspendAsync(user, Context.Channel)
-                .ContinueWith(
-                async (t) => await logger.LogAsync(new LogMessage(LogSeverity.Error, "SmeuService", $"Attempted to add smeu to collection, but failed: {t.Exception?.InnerException.Message}\n{t.Exception?.InnerException.StackTrace}")),
-                TaskContinuationOptions.OnlyOnFaulted);
+            await smeuservice.UnsuspendAsync(user, Context.Channel);
         }
     }
 }
