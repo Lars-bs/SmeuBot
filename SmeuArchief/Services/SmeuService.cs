@@ -28,14 +28,39 @@ namespace SmeuArchief.Services
             client.MessageReceived += Client_MessageReceived;
         }
 
-        private async Task Client_MessageReceived(SocketMessage arg)
+        public async Task UnsuspendAsync(SocketUser user, ISocketMessageChannel responseChannel)
+        {
+            Suspension suspension;
+            using (SmeuContext context = services.GetRequiredService<SmeuContext>())
+            {
+                suspension = (from s in context.Suspensions
+                              where s.User == user.Id
+                              select s).FirstOrDefault();
+            }
+
+            if(suspension == null)
+            {
+                await responseChannel.SendMessageAsync("Deze gebruiker kan niet afgetikt worden omdat deze niet af is!");
+            }
+            else
+            {
+                using (SmeuContext context = services.GetRequiredService<SmeuContext>())
+                {
+                    context.Suspensions.Remove(suspension);
+                    await context.SaveChangesAsync();
+                }
+                await responseChannel.SendMessageAsync($"{user.Mention} is niet meer af!");
+            }
+        }
+
+        private Task Client_MessageReceived(SocketMessage arg)
         {
             // is this a smeu?
-            if (!(arg is SocketUserMessage msg)) { return; }
-            if (msg.Author.IsBot) { return; }
-            if (msg.Channel.Id != settings.SmeuChannelId) { return; }
+            if (!(arg is SocketUserMessage msg)) { return Task.CompletedTask; }
+            if (msg.Author.IsBot) { return Task.CompletedTask; }
+            if (msg.Channel.Id != settings.SmeuChannelId) { return Task.CompletedTask; }
 
-            Add(msg).ContinueWith(
+            return Add(msg).ContinueWith(
                 async (t) => await logger.LogAsync(new LogMessage(LogSeverity.Error, "SmeuService", $"Attempted to add smeu to collection, but failed: {t.Exception?.InnerException.Message}\n{t.Exception?.InnerException.StackTrace}")),
                 TaskContinuationOptions.OnlyOnFaulted);
         }
