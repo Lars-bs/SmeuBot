@@ -28,56 +28,6 @@ namespace SmeuArchief.Services
             client.MessageReceived += Client_MessageReceived;
         }
 
-        public async Task SuspendAsync(SocketUser user, ISocketMessageChannel responseChannel)
-        {
-            Suspension suspension;
-            using (SmeuContext context = services.GetRequiredService<SmeuContext>())
-            {
-                suspension = (from s in context.Suspensions
-                              where s.User == user.Id
-                              select s).FirstOrDefault();
-            }
-
-            if (suspension != null)
-            {
-                await responseChannel.SendMessageAsync("Deze gebruiker is al af!");
-            }
-            else
-            {
-                using (SmeuContext context = services.GetRequiredService<SmeuContext>())
-                {
-                    context.Suspensions.Add(new Suspension { User = user.Id });
-                    await context.SaveChangesAsync();
-                }
-                await responseChannel.SendMessageAsync($"{user.Mention} is **af**!");
-            }
-        }
-
-        public async Task UnsuspendAsync(SocketUser user, ISocketMessageChannel responseChannel)
-        {
-            Suspension suspension;
-            using (SmeuContext context = services.GetRequiredService<SmeuContext>())
-            {
-                suspension = (from s in context.Suspensions
-                              where s.User == user.Id
-                              select s).FirstOrDefault();
-            }
-
-            if(suspension == null)
-            {
-                await responseChannel.SendMessageAsync("Deze gebruiker kan niet afgetikt worden omdat deze niet af is!");
-            }
-            else
-            {
-                using (SmeuContext context = services.GetRequiredService<SmeuContext>())
-                {
-                    context.Suspensions.Remove(suspension);
-                    await context.SaveChangesAsync();
-                }
-                await responseChannel.SendMessageAsync($"{user.Mention} is niet meer af!");
-            }
-        }
-
         private Task Client_MessageReceived(SocketMessage arg)
         {
             // is this a smeu?
@@ -90,10 +40,49 @@ namespace SmeuArchief.Services
                 TaskContinuationOptions.OnlyOnFaulted);
         }
 
+        public async Task SuspendAsync(SocketUser user, ISocketMessageChannel responseChannel)
+        {
+            if (GetUserSuspension(user) != null)
+            {
+                // if there is a suspension, return feedback to user
+                await responseChannel.SendMessageAsync("Deze gebruiker is al af!");
+            }
+            else
+            {
+                // if there is no suspension, add one to the database
+                using (SmeuContext context = services.GetRequiredService<SmeuContext>())
+                {
+                    context.Suspensions.Add(new Suspension { User = user.Id });
+                    await context.SaveChangesAsync();
+                }
+                await responseChannel.SendMessageAsync($"{user.Mention} is **af**!");
+            }
+        }
+
+        public async Task UnsuspendAsync(SocketUser user, ISocketMessageChannel responseChannel)
+        {
+            Suspension suspension;
+            if((suspension = GetUserSuspension(user)) == null)
+            {
+                // if there is no suspension, return feedback to the user
+                await responseChannel.SendMessageAsync("Deze gebruiker kan niet afgetikt worden omdat deze niet af is!");
+            }
+            else
+            {
+                // if there is a suspension, remove it from the database
+                using (SmeuContext context = services.GetRequiredService<SmeuContext>())
+                {
+                    context.Suspensions.Remove(suspension);
+                    await context.SaveChangesAsync();
+                }
+                await responseChannel.SendMessageAsync($"{user.Mention} is niet meer af!");
+            }
+        }
+
         public async Task Add(SocketUserMessage msg)
         {
             // is the user suspended?
-            if (IsUserSuspended(msg.Author))
+            if (GetUserSuspension(msg.Author) != null)
             {
                 await msg.DeleteAsync();
                 return;
@@ -128,17 +117,15 @@ namespace SmeuArchief.Services
             }
         }
 
-        private bool IsUserSuspended(SocketUser user)
+        private Suspension GetUserSuspension(SocketUser user)
         {
-            // make sure that the sender of the command is not suspended
-            bool suspended;
+            // check if there is an entry in the suspensions table for given user
             using (SmeuContext database = services.GetRequiredService<SmeuContext>())
             {
-                suspended = (from s in database.Suspensions
-                             where s.User == user.Id
-                             select s).Any();
+                return (from s in database.Suspensions
+                        where s.User == user.Id
+                        select s).FirstOrDefault();
             }
-            return suspended;
         }
     }
 }
