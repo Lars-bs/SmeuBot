@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmeuBase;
 
-namespace SmeuBase.Migrations
+namespace SmeuBase.Migrations.Sqlite
 {
-    [DbContext(typeof(SmeuContext))]
-    partial class SmeuContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(SmeuContextSqlite))]
+    partial class SmeuContextSqliteModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {

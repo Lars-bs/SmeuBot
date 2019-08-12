@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace SmeuBase.Migrations
+namespace SmeuBase.Migrations.Sqlite
 {
     public partial class InitialCreate : Migration
     {

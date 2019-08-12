@@ -14,12 +14,14 @@ namespace SmeuArchief.Services
     {
         private readonly IServiceProvider services;
         private readonly DiscordSocketClient client;
+        private readonly SmeuBaseFactory smeuBaseFactory;
         private readonly LogService logger;
 
-        public RestoreService(IServiceProvider services, DiscordSocketClient client, LogService logger)
+        public RestoreService(IServiceProvider services, DiscordSocketClient client, SmeuBaseFactory smeuBaseFactory, LogService logger)
         {
             this.services = services;
             this.client = client;
+            this.smeuBaseFactory = smeuBaseFactory;
             this.logger = logger;
 
             client.Ready += SetStateMessageAsync;
@@ -42,7 +44,7 @@ namespace SmeuArchief.Services
         public async Task RestoreAsync()
         {
             await logger.LogAsync(new LogMessage(LogSeverity.Info, "RestoreService", "Start database migration"));
-            using(SmeuContext context = services.GetRequiredService<SmeuContext>())
+            using(SmeuContext context = smeuBaseFactory.GetSmeuBase())
             {
                 context.Database.Migrate();
             }

@@ -24,7 +24,8 @@ namespace SmeuArchief.Services
 
         public async Task LogAsync(LogMessage arg)
         {
-            await Console.Out.WriteLineAsync($"[{arg.Severity.ToString().PadLeft(8)}] {DateTime.UtcNow} [{arg.Source.PadRight(15)}] {arg.Message}");
+            await Console.Out.WriteAsync($"[{arg.Severity.ToString().PadLeft(8)}] {DateTime.UtcNow} [{arg.Source.PadRight(15)}] {arg.Message}");
+            await Console.Out.WriteLineAsync(arg.Exception != null ? $" {arg.Exception.Message}\n{arg.Exception.StackTrace}" : "");
         }
     }
 }

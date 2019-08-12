@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmeuBase;
 
-namespace SmeuBase.Migrations
+namespace SmeuBase.Migrations.Sqlite
 {
-    [DbContext(typeof(SmeuContext))]
-    [Migration("20190811171614_InitialCreate")]
+    [DbContext(typeof(SmeuContextSqlite))]
+    [Migration("20190812143731_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
