@@ -51,6 +51,8 @@ namespace SmeuArchief
             provider.GetRequiredService<CommandHandler>();
             provider.GetRequiredService<SmeuService>();
 
+            // restore state of the bot and start
+            provider.GetRequiredService<RestoreService>().RestoreAsync();
             await provider.GetRequiredService<StartupService>().StartAsync();
             await Task.Delay(-1);
         }
@@ -73,6 +75,7 @@ namespace SmeuArchief
             .AddSingleton<SmeuService>()
             .AddSingleton<CommandHandler>()
             .AddSingleton<LogService>()
+            .AddSingleton<RestoreService>()
             .AddSingleton<StartupService>();
         }
     }
