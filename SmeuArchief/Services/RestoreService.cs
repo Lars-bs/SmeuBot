@@ -1,11 +1,8 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using SmeuBase;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SmeuArchief.Services
@@ -35,7 +32,7 @@ namespace SmeuArchief.Services
 
         private async Task RestorePendingSmeuAsync()
         {
-            foreach(var guild in client.Guilds)
+            foreach (var guild in client.Guilds)
             {
                 await logger.LogAsync(new LogMessage(LogSeverity.Info, "RestoreService", $"Restoring {guild.Name}"));
             }
@@ -44,7 +41,7 @@ namespace SmeuArchief.Services
         public async Task RestoreAsync()
         {
             await logger.LogAsync(new LogMessage(LogSeverity.Info, "RestoreService", "Start database migration"));
-            using(SmeuContext context = smeuBaseFactory.GetSmeuBase())
+            using (SmeuContext context = smeuBaseFactory.GetSmeuBase())
             {
                 context.Database.Migrate();
             }
