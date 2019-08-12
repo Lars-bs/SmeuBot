@@ -67,7 +67,8 @@ namespace SmeuArchief
                 DefaultRunMode = RunMode.Async,
                 CaseSensitiveCommands = false,
             }))
-            .AddSingleton(Settings)
+            .AddSingleton<Settings>(Settings)
+            .AddSingleton<IContextSettingsProvider>(Settings)
             .AddTransient<SmeuContext>()
             .AddSingleton<SmeuService>()
             .AddSingleton<CommandHandler>()
