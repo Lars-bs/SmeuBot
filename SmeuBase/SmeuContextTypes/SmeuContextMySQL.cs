@@ -2,7 +2,7 @@
 
 namespace SmeuBase
 {
-    public class SmeuContextMySQL : SmeuContext
+    internal class SmeuContextMySQL : SmeuContext
     {
 #if DB_BUILD
         public SmeuContextMySQL() : base() { }
@@ -21,9 +21,9 @@ namespace SmeuBase
                 optionsBuilder.EnableSensitiveDataLogging();
 #endif
 #if DB_BUILD
-                optionsBuilder.UseMySQL("server=localhost;database=smeubase");
+                optionsBuilder.UseMySql("Server=localhost;Database=smeubase");
 #else
-                optionsBuilder.UseMySQL(contextSettings.ConnectionString);
+                optionsBuilder.UseMySql(contextSettings.ConnectionString);
 #endif
             }
         }

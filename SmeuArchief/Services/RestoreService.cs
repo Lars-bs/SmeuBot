@@ -41,9 +41,17 @@ namespace SmeuArchief.Services
         public async Task RestoreAsync()
         {
             await logger.LogAsync(new LogMessage(LogSeverity.Info, "RestoreService", "Start database migration"));
-            using (SmeuContext context = smeuBaseFactory.GetSmeuBase())
+            try
             {
-                context.Database.Migrate();
+                using (SmeuContext context = smeuBaseFactory.GetSmeuBase())
+                {
+                    context.Database.Migrate();
+                }
+            }
+            catch(Exception e)
+            {
+                await logger.LogAsync(new LogMessage(LogSeverity.Critical, "RestoreService", "Attempted to migrate the database, but failed.", e));
+                Environment.Exit(-1);
             }
             await logger.LogAsync(new LogMessage(LogSeverity.Info, "RestoreService", "Database migrated"));
         }

@@ -2,7 +2,7 @@
 
 namespace SmeuBase
 {
-    public class SmeuContextSqlite : SmeuContext
+    internal class SmeuContextSqlite : SmeuContext
     {
 #if DB_BUILD
         public SmeuContextSqlite() : base() { }
