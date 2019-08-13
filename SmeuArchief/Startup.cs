@@ -1,8 +1,8 @@
 ﻿using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using SmeuBase;
 using SmeuArchief.Services;
+using SmeuBase;
 using System;
 using System.IO;
 using System.Threading.Tasks;

@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
 using SmeuBase;
 using System;
 using System.Linq;
@@ -75,7 +74,7 @@ namespace SmeuArchief.Services
                 // if there is no suspension, add one to the database
                 using (SmeuContext context = smeuBaseFactory.GetSmeuBase())
                 {
-                    context.Suspensions.Add(new Suspension { User = user.Id, Date=DateTime.UtcNow, Reason=reason });
+                    context.Suspensions.Add(new Suspension { User = user.Id, Date = DateTime.UtcNow, Reason = reason });
                     await context.SaveChangesAsync();
                 }
                 return true;

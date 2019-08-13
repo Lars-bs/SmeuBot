@@ -48,7 +48,7 @@ namespace SmeuArchief.Services
                     context.Database.Migrate();
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 await logger.LogAsync(new LogMessage(LogSeverity.Critical, "RestoreService", "Attempted to migrate the database, but failed.", e));
                 Environment.Exit(-1);
