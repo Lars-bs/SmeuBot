@@ -39,7 +39,7 @@ namespace SmeuArchief.Utilities
 
         public static float GetSimilarity(string first, string second, int distance)
         {
-            int l = first.Length + second.Length;
+            int l = Math.Max(first.Length, second.Length);
             return (l - distance) / (float)l;
         }
     }
