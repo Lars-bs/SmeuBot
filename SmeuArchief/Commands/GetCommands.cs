@@ -52,6 +52,18 @@ namespace SmeuArchief.Commands
         {
             input = input.ToLower();
 
+            await GetSmeuReply(input).ConfigureAwait(false);
+        }
+
+        private async Task GetSmeuReply(string input)
+        {
+            Embed embed = GatherSmeuData(input);
+
+            await ReplyAsync(embed: embed);
+        }
+
+        private Embed GatherSmeuData(string input)
+        {
             // create embed for given word
             EmbedBuilder eb = new EmbedBuilder()
                 .WithTitle($"__{input}__")
@@ -59,7 +71,7 @@ namespace SmeuArchief.Commands
 
             // find existing submission in database
             Submission submission;
-            using(SmeuContext database = smeuBaseFactory.GetSmeuBase())
+            using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
             {
                 submission = (from s in database.Submissions
                               where s.Smeu == input
@@ -72,33 +84,49 @@ namespace SmeuArchief.Commands
                 SocketUser user = client.GetUser(submission.Author);
 
                 eb = eb.WithThumbnailUrl(user.GetAvatarUrl());
-                eb.AddField("Auteur", user.Username, true);
-                eb.AddField("Datum", $"{submission.Date:d-MMMM-yyyy H:mm} UTC", true);
+                eb.AddField("Auteur", user.Username);
+                eb.AddField("Datum", $"{submission.Date:d-MMMM-yyyy H:mm} UTC");
+                eb.AddField("\u200B", "\u200B");
             }
 
             // add similar smeu to the embed
             using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
             {
+                // find the similar smeu and sort them by similarity
                 var top = from s in database.Submissions
-                          let d = Levenshtein.GetSimilarity(s.Smeu, input)
-                          where s.Smeu != input
-                          orderby d descending, s.Smeu
+                          let d = Levenshtein.GetLevenshteinDistance(s.Smeu, input)
+                          where s.Smeu != input && d <= 4
+                          orderby d, s.Smeu
                           select new { Submission = s, Similarity = d };
 
                 int i = 0;
-                StringBuilder sb = new StringBuilder();
-                foreach(var r in top)
+                StringBuilder sbsmeu = new StringBuilder();
+                StringBuilder sbsimilarity = new StringBuilder();
+                if (top.Any())
                 {
-                    sb.AppendLine($"{r.Submission.Smeu} ({Math.Round(r.Similarity * 100)}% hetzelfde)");
+                    foreach (var r in top)
+                    {
+                        // add each similar smeu and its similarity value to the embed, up to 5 smeu
+                        sbsmeu.AppendLine(r.Submission.Smeu);
+                        sbsimilarity.AppendLine($"({Math.Round(Levenshtein.GetSimilarity(r.Submission.Smeu, input, r.Similarity) * 100)}%)");
 
-                    i++;
-                    if(i > 4) { break; }
+                        i++;
+                        if (i > 4) { break; }
+                    }
+
+                    // apply stringbuilders to embed
+                    eb.AddField("Vergelijkbaar met:", sbsmeu.ToString(), true);
+                    eb.AddField("\u200B", sbsimilarity.ToString(), true);
                 }
-
-                eb.AddField("Vergelijkbaar met:", sb.ToString());
-
-                await ReplyAsync(embed: eb.Build());
+                else
+                {
+                    // show it if there are no similar smeu
+                    eb.AddField("Vergelijkbaar met:", "*Geen vergelijkbare smeu*");
+                }
             }
+
+            // return the result
+            return eb.Build();
         }
     }
 }
