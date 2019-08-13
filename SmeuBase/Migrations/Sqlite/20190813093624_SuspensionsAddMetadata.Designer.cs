@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmeuBase;
 
 namespace SmeuBase.Migrations.Sqlite
 {
     [DbContext(typeof(SmeuContextSqlite))]
-    partial class SmeuContextSqliteModelSnapshot : ModelSnapshot
+    [Migration("20190813093624_SuspensionsAddMetadata")]
+    partial class SuspensionsAddMetadata
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

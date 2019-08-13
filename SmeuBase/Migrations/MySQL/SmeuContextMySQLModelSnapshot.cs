@@ -41,6 +41,11 @@ namespace SmeuBase.Migrations.MySQL
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<DateTime>("Date");
+
+                    b.Property<string>("Reason")
+                        .IsRequired();
+
                     b.Property<ulong>("User");
 
                     b.HasKey("Id");

@@ -2,19 +2,22 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmeuBase;
 
-namespace SmeuBase.Migrations.Sqlite
+namespace SmeuBase.Migrations.MySQL
 {
-    [DbContext(typeof(SmeuContextSqlite))]
-    partial class SmeuContextSqliteModelSnapshot : ModelSnapshot
+    [DbContext(typeof(SmeuContextMySQL))]
+    [Migration("20190813093628_SuspensionsAddMetadata")]
+    partial class SuspensionsAddMetadata
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
+                .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             modelBuilder.Entity("SmeuBase.Submission", b =>
                 {

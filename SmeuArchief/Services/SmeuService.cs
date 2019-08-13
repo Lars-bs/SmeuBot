@@ -54,7 +54,7 @@ namespace SmeuArchief.Services
                 await msg.AddReactionAsync(denyEmoji);
                 await msg.Channel.SendMessageAsync($"{submission.Smeu} is al genoemd door {client.GetUser(result.Author).Mention} op {result.Date}");
 
-                if (!await SuspendAsync(msg.Author)) { await msg.Channel.SendMessageAsync("Deze gebruiker is al af!"); }
+                if (!await SuspendAsync(msg.Author, $"{submission.Smeu} is al genoemd.")) { await msg.Channel.SendMessageAsync("Deze gebruiker is al af!"); }
                 else { await msg.Channel.SendMessageAsync($"{msg.Author.Mention} is **af**!"); }
             }
             else
@@ -63,7 +63,7 @@ namespace SmeuArchief.Services
             }
         }
 
-        public async Task<bool> SuspendAsync(SocketUser user)
+        public async Task<bool> SuspendAsync(SocketUser user, string reason)
         {
             if (GetUserSuspension(user) != null)
             {
@@ -75,7 +75,7 @@ namespace SmeuArchief.Services
                 // if there is no suspension, add one to the database
                 using (SmeuContext context = smeuBaseFactory.GetSmeuBase())
                 {
-                    context.Suspensions.Add(new Suspension { User = user.Id });
+                    context.Suspensions.Add(new Suspension { User = user.Id, Date=DateTime.UtcNow, Reason=reason });
                     await context.SaveChangesAsync();
                 }
                 return true;
