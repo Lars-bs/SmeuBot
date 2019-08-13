@@ -8,7 +8,7 @@ namespace SmeuArchief.Commands
         [Command("ping"), Summary("Returns a message")]
         public async Task Ping()
         {
-            await Context.Channel.SendMessageAsync($"Hallo {Context.User.Mention}!");
+            await ReplyAsync($"Hallo {Context.User.Mention}!");
         }
     }
 }

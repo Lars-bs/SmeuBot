@@ -2,15 +2,17 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmeuBase;
 
 namespace SmeuBase.Migrations.MySQL
 {
     [DbContext(typeof(SmeuContextMySQL))]
-    partial class SmeuContextMySQLModelSnapshot : ModelSnapshot
+    [Migration("20190813080731_SubmissionsAddMessageId")]
+    partial class SubmissionsAddMessageId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

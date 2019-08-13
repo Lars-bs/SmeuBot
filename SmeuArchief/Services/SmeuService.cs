@@ -28,38 +28,6 @@ namespace SmeuArchief.Services
             this.logger = logger;
 
             client.MessageReceived += Client_MessageReceived;
-            client.MessageDeleted += Client_MessageDeleted;
-        }
-
-        private async Task Client_MessageDeleted(Cacheable<IMessage, ulong> message, ISocketMessageChannel channel)
-        {
-            if (channel.Id != settings.SmeuChannelId) { return; }
-            IMessage msg = await message.GetOrDownloadAsync();
-
-            if (msg == null)
-            {
-                await logger.LogAsync(new LogMessage(LogSeverity.Warning, "SmeuService", "Could not retrieve deleted message!"));
-                return;
-            }
-
-            Submission submission;
-            using (SmeuContext context = smeuBaseFactory.GetSmeuBase())
-            {
-                submission = (from s in context.Submissions
-                              where s.Author == (msg.Author.Id) && s.Smeu == msg.Content.ToLower() && s.Date == msg.CreatedAt.UtcDateTime
-                              select s).FirstOrDefault();
-            }
-
-            if (submission != null)
-            {
-                using (SmeuContext context = smeuBaseFactory.GetSmeuBase())
-                {
-                    context.Submissions.Remove(submission);
-                    await context.SaveChangesAsync();
-                }
-                await logger.LogAsync(new LogMessage(LogSeverity.Info, "SmeuService", $"Smeu '{msg.Content}' was deleted."));
-            }
-
         }
 
         private async Task Client_MessageReceived(SocketMessage arg)
@@ -69,15 +37,38 @@ namespace SmeuArchief.Services
             if (msg.Author.IsBot) { return; }
             if (msg.Channel.Id != settings.SmeuChannelId) { return; }
 
-            await Add(msg);
+            // is user allowed to submit a smeu?
+            if (GetUserSuspension(arg.Author) != null)
+            {
+                await msg.DeleteAsync();
+                return;
+            }
+
+            // create submission from message
+            Submission submission = new Submission { Author = msg.Author.Id, Date = msg.CreatedAt.UtcDateTime, MessageId = msg.Id, Smeu = msg.Content.ToLower() };
+            Submission result;
+
+            // try to add it to the database
+            if ((result = await Add(submission)) != submission)
+            {
+                await msg.AddReactionAsync(denyEmoji);
+                await msg.Channel.SendMessageAsync($"{submission.Smeu} is al genoemd door {client.GetUser(result.Author).Mention} op {result.Date}");
+
+                if (!await SuspendAsync(msg.Author)) { await msg.Channel.SendMessageAsync("Deze gebruiker is al af!"); }
+                else { await msg.Channel.SendMessageAsync($"{msg.Author.Mention} is **af**!"); }
+            }
+            else
+            {
+                await msg.AddReactionAsync(acceptEmoji);
+            }
         }
 
-        public async Task SuspendAsync(SocketUser user, ISocketMessageChannel responseChannel)
+        public async Task<bool> SuspendAsync(SocketUser user)
         {
             if (GetUserSuspension(user) != null)
             {
                 // if there is a suspension, return feedback to user
-                await responseChannel.SendMessageAsync("Deze gebruiker is al af!");
+                return false;
             }
             else
             {
@@ -87,17 +78,17 @@ namespace SmeuArchief.Services
                     context.Suspensions.Add(new Suspension { User = user.Id });
                     await context.SaveChangesAsync();
                 }
-                await responseChannel.SendMessageAsync($"{user.Mention} is **af**!");
+                return true;
             }
         }
 
-        public async Task UnsuspendAsync(SocketUser user, ISocketMessageChannel responseChannel)
+        public async Task<bool> UnsuspendAsync(SocketUser user)
         {
             Suspension suspension;
             if ((suspension = GetUserSuspension(user)) == null)
             {
                 // if there is no suspension, return feedback to the user
-                await responseChannel.SendMessageAsync("Deze gebruiker kan niet afgetikt worden omdat deze niet af is!");
+                return false;
             }
             else
             {
@@ -107,45 +98,63 @@ namespace SmeuArchief.Services
                     context.Suspensions.Remove(suspension);
                     await context.SaveChangesAsync();
                 }
-                await responseChannel.SendMessageAsync($"{user.Mention} is niet meer af!");
+                return true;
             }
         }
 
-        public async Task Add(SocketUserMessage msg)
+        public async Task<Submission> Add(Submission submission)
         {
-            // is the user suspended?
-            if (GetUserSuspension(msg.Author) != null)
-            {
-                await msg.DeleteAsync();
-                return;
-            }
-
             // has the smeu been submitted before?
-            string smeu = msg.Content.ToLowerInvariant();
-            Submission submission;
+            Submission dbresult;
             using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
             {
-                submission = (from s in database.Submissions
-                              where s.Smeu == smeu
-                              orderby s.Date
-                              select s).FirstOrDefault();
+                dbresult = (from s in database.Submissions
+                            where s.Smeu == submission.Smeu
+                            orderby s.Date
+                            select s).FirstOrDefault();
             }
 
-            if (submission != null)
+            if (dbresult != null)
             {
-                await msg.AddReactionAsync(denyEmoji);
-                await msg.Channel.SendMessageAsync($"{smeu} is al genoemd door {client.GetUser(submission.Author).Mention} op {submission.Date}");
-                await SuspendAsync(msg.Author, msg.Channel);
+                // return the result if there is already such a smeu
+                return dbresult;
             }
-            else
-            {
-                await msg.AddReactionAsync(acceptEmoji);
 
-                using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
+            // add the submission to the database if none existed yet
+            using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
+            {
+                database.Submissions.Add(submission);
+                await database.SaveChangesAsync();
+            }
+            return submission;
+        }
+
+        public async Task Remove(Submission submission)
+        {
+
+            try
+            {
+                // try remove the submission from the discord
+                IMessage message = await (client.GetChannel(settings.SmeuChannelId) as IMessageChannel).GetMessageAsync(submission.MessageId);
+                if (message != null)
                 {
-                    database.Submissions.Add(new Submission { Author = msg.Author.Id, Smeu = smeu, Date = msg.CreatedAt.UtcDateTime });
-                    await database.SaveChangesAsync();
+                    await message.DeleteAsync();
                 }
+                else
+                {
+                    await logger.LogAsync(new LogMessage(LogSeverity.Warning, "SmeuService", $"Attempted to delete message from discord with id '{submission.MessageId}', but failed: Could not find the message."));
+                }
+            }
+            catch (Exception e)
+            {
+                await logger.LogAsync(new LogMessage(LogSeverity.Warning, "SmeuService", $"Attempted to delete message from discord with id '{submission.MessageId}', but failed.", e));
+            }
+
+            // remove from database
+            using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
+            {
+                database.Submissions.RemoveRange(submission);
+                await database.SaveChangesAsync();
             }
         }
 

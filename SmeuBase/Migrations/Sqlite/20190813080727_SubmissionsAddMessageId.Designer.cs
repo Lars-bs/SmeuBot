@@ -2,20 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmeuBase;
 
-namespace SmeuBase.Migrations.MySQL
+namespace SmeuBase.Migrations.Sqlite
 {
-    [DbContext(typeof(SmeuContextMySQL))]
-    partial class SmeuContextMySQLModelSnapshot : ModelSnapshot
+    [DbContext(typeof(SmeuContextSqlite))]
+    [Migration("20190813080727_SubmissionsAddMessageId")]
+    partial class SubmissionsAddMessageId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("ProductVersion", "2.2.6-servicing-10079");
 
             modelBuilder.Entity("SmeuBase.Submission", b =>
                 {

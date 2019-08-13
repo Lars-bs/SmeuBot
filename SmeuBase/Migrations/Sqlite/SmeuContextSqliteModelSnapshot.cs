@@ -25,6 +25,8 @@ namespace SmeuBase.Migrations.Sqlite
 
                     b.Property<DateTime>("Date");
 
+                    b.Property<ulong>("MessageId");
+
                     b.Property<string>("Smeu")
                         .IsRequired();
 

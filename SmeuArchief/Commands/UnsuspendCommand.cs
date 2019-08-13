@@ -12,12 +12,10 @@ namespace SmeuArchief.Commands
     public class UnsuspendCommand : ModuleBase<SocketCommandContext>
     {
         private readonly SmeuService smeuservice;
-        private readonly LogService logger;
 
-        public UnsuspendCommand(SmeuService smeuservice, LogService logger)
+        public UnsuspendCommand(SmeuService smeuservice)
         {
             this.smeuservice = smeuservice;
-            this.logger = logger;
         }
 
         [Command("tik"), Summary("Tik iemand aan zodat ie weer mee mag doen.")]
@@ -26,11 +24,12 @@ namespace SmeuArchief.Commands
             if(user == Context.User)
             {
                 // users are not allowed to unsuspend themselves
-                await Context.Channel.SendMessageAsync("Het is niet toegestaan om jezelf af te tikken, stiekemerd!");
+                await ReplyAsync("Het is niet toegestaan om jezelf af te tikken, stiekemerd!");
                 return;
             }
 
-            await smeuservice.UnsuspendAsync(user, Context.Channel);
+            if(await smeuservice.UnsuspendAsync(user)) { await ReplyAsync($"{user.Mention} is niet meer af!"); }
+            else { await ReplyAsync("Deze gebruiker kan niet afgetikt worden omdat deze niet af is!"); }
         }
     }
 }
