@@ -29,12 +29,15 @@ namespace SmeuArchief.Commands
 
             using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
             {
+                // get all suspensions
                 var dbresult = from s in database.Suspensions
                                select s;
 
+                // if nobody is suspended, notify the user about that
                 if (dbresult.Count() == 0) { await ReplyAsync("Er is op dit moment helemaal niemand af!"); }
                 else
                 {
+                    // present the suspensions in an embed
                     EmbedBuilder eb = new EmbedBuilder()
                         .WithTitle("Deze mensen zijn **af**:")
                         .WithColor(Color.DarkRed);
