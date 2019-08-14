@@ -12,6 +12,8 @@ namespace SmeuBase
 
         public DateTime Date { get; set; }
 
+        public ulong MessageId { get; set; }
+
         public Submission Original { get; set; }
 
         public int OriginalId { get; set; }

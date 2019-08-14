@@ -17,8 +17,6 @@ namespace SmeuBase
 
         public Duplicate Duplicate { get; set; }
 
-        public int? DuplicateId { get; set; }
-
         public ulong Suspender { get; set; }
 
         public ulong? Revoker { get; set; }

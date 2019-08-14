@@ -24,25 +24,15 @@ namespace SmeuArchief.Commands
             {
                 input = input.ToLower();
 
-                // find the referenced smeu
-                Submission submission;
-                using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
-                {
-                    submission = (from s in database.Submissions
-                                  where s.Smeu == input && s.Author == Context.User.Id
-                                  select s).FirstOrDefault();
-                }
-
-                // make sure that the smeu exists
-                if (submission == null)
-                {
-                    await ReplyAsync("Jij hebt die smeu niet ingediend, dus ik kan m ook niet verwijderen.");
-                    return;
-                }
-
                 // remove it from the database
-                await smeuService.Remove(submission);
-                await ReplyAsync($"'{submission.Smeu}' is niet langer meer een smeu.");
+                if(await smeuService.RemoveAsync(input, Context.User.Id))
+                {
+                    await ReplyAsync($"{input} is hersteld!");
+                }
+                else
+                {
+                    await ReplyAsync($"Ik kon geen inzending van jouw vinden voor {input}");
+                }
             }
         }
     }

@@ -26,6 +26,8 @@ namespace SmeuBase.Migrations.MySQL
 
                     b.Property<DateTime>("Date");
 
+                    b.Property<ulong>("MessageId");
+
                     b.Property<int>("OriginalId");
 
                     b.Property<int?>("SuspensionId");
@@ -65,8 +67,6 @@ namespace SmeuBase.Migrations.MySQL
                         .ValueGeneratedOnAdd();
 
                     b.Property<DateTime>("Date");
-
-                    b.Property<int?>("DuplicateId");
 
                     b.Property<string>("Reason")
                         .IsRequired();

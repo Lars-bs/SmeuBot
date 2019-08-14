@@ -9,7 +9,7 @@ using SmeuBase;
 namespace SmeuBase.Migrations.MySQL
 {
     [DbContext(typeof(SmeuContextMySQL))]
-    [Migration("20190814153850_AddDuplicatesTable")]
+    [Migration("20190814181314_AddDuplicatesTable")]
     partial class AddDuplicatesTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,6 +27,8 @@ namespace SmeuBase.Migrations.MySQL
                     b.Property<ulong>("Author");
 
                     b.Property<DateTime>("Date");
+
+                    b.Property<ulong>("MessageId");
 
                     b.Property<int>("OriginalId");
 
@@ -67,8 +69,6 @@ namespace SmeuBase.Migrations.MySQL
                         .ValueGeneratedOnAdd();
 
                     b.Property<DateTime>("Date");
-
-                    b.Property<int?>("DuplicateId");
 
                     b.Property<string>("Reason")
                         .IsRequired();

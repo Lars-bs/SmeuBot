@@ -9,7 +9,7 @@ using SmeuBase;
 namespace SmeuBase.Migrations.Sqlite
 {
     [DbContext(typeof(SmeuContextSqlite))]
-    [Migration("20190814153844_AddDuplicatesTable")]
+    [Migration("20190814181308_AddDuplicatesTable")]
     partial class AddDuplicatesTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,6 +26,8 @@ namespace SmeuBase.Migrations.Sqlite
                     b.Property<ulong>("Author");
 
                     b.Property<DateTime>("Date");
+
+                    b.Property<ulong>("MessageId");
 
                     b.Property<int>("OriginalId");
 
@@ -66,8 +68,6 @@ namespace SmeuBase.Migrations.Sqlite
                         .ValueGeneratedOnAdd();
 
                     b.Property<DateTime>("Date");
-
-                    b.Property<int?>("DuplicateId");
 
                     b.Property<string>("Reason")
                         .IsRequired();

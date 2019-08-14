@@ -33,6 +33,7 @@ namespace SmeuArchief.Commands
                     {
                         // get all suspensions
                         var dbresult = from s in database.Suspensions
+                                       where s.Revoker == null
                                        select s;
 
                         // if nobody is suspended, notify the user about that

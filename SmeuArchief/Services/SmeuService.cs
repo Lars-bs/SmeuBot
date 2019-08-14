@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 using SmeuBase;
 using System;
 using System.Linq;
@@ -24,10 +25,10 @@ namespace SmeuArchief.Services
             this.settings = settings;
             this.logger = logger;
 
-            client.MessageReceived += Client_MessageReceived;
+            client.MessageReceived += SaveSmeuAsync;
         }
 
-        private async Task Client_MessageReceived(SocketMessage arg)
+        private async Task SaveSmeuAsync(SocketMessage arg)
         {
             // is this a smeu?
             if (!(arg is SocketUserMessage msg)) { return; }
@@ -35,51 +36,41 @@ namespace SmeuArchief.Services
             if (msg.Channel.Id != settings.SmeuChannelId) { return; }
 
             // is user allowed to submit a smeu?
-            if (GetUserSuspension(arg.Author) != null)
+            if (GetUserSuspension(arg.Author.Id) != null)
             {
                 await msg.DeleteAsync();
                 return;
             }
 
-            // create submission from message
-            Submission submission = new Submission { Author = msg.Author.Id, Date = msg.CreatedAt.UtcDateTime, MessageId = msg.Id, Smeu = msg.Content.ToLower() };
-            Submission result;
-
-            // try to add it to the database
-            if ((result = await Add(submission)) != submission)
-            {
-                await msg.AddReactionAsync(denyEmoji);
-                await msg.Channel.SendMessageAsync($"{submission.Smeu} is al genoemd door {client.GetUser(result.Author).Mention} op {result.Date}");
-
-                if (!await SuspendAsync(msg.Author, $"{submission.Smeu} is al genoemd.")) { await msg.Channel.SendMessageAsync("Deze gebruiker is al af!"); }
-                else { await msg.Channel.SendMessageAsync($"{msg.Author.Mention} is **af**!"); }
-            }
-            else
-            {
-                await msg.AddReactionAsync(acceptEmoji);
-            }
+            // add it to the database
+            await AddAsync(msg.Content.ToLower(), msg.CreatedAt.UtcDateTime, msg.Author.Id, msg.Id);
         }
 
-        public async Task<bool> SuspendAsync(SocketUser user, string reason)
+        public async Task<bool> SuspendAsync(ulong user, ulong suspender, string reason, Duplicate duplicate = null)
         {
             if (GetUserSuspension(user) != null)
             {
-                // if there is a suspension, return feedback to user
+                // if user is already suspended, return feedback to user
                 return false;
             }
-            else
+
+            // if there is no suspension, add one to the database
+            using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
             {
-                // if there is no suspension, add one to the database
-                using (SmeuContext context = smeuBaseFactory.GetSmeuBase())
+                Suspension suspension = new Suspension { User = user, Date = DateTime.UtcNow, Suspender = suspender, Reason = reason };
+                database.Suspensions.Add(suspension);
+                if (duplicate != null)
                 {
-                    context.Suspensions.Add(new Suspension { User = user.Id, Date = DateTime.UtcNow, Reason = reason });
-                    await context.SaveChangesAsync();
+                    // if a duplicate was given, update the duplicate to reflect the suspension
+                    duplicate.Suspension = suspension;
+                    database.Duplicates.Update(duplicate);
                 }
-                return true;
+                await database.SaveChangesAsync();
             }
+            return true;
         }
 
-        public async Task<bool> UnsuspendAsync(SocketUser user)
+        public async Task<bool> UnsuspendAsync(ulong user, ulong revoker)
         {
             Suspension suspension;
             if ((suspension = GetUserSuspension(user)) == null)
@@ -89,79 +80,112 @@ namespace SmeuArchief.Services
             }
             else
             {
-                // if there is a suspension, remove it from the database
+                // if there is a suspension, add the revoker to it.
+                suspension.Revoker = revoker;
                 using (SmeuContext context = smeuBaseFactory.GetSmeuBase())
                 {
-                    context.Suspensions.Remove(suspension);
+                    context.Suspensions.Update(suspension);
                     await context.SaveChangesAsync();
                 }
                 return true;
             }
         }
 
-        public async Task<Submission> Add(Submission submission)
+        public async Task<bool> AddAsync(string smeu, DateTime date, ulong author, ulong messageid)
         {
             // has the smeu been submitted before?
-            Submission dbresult;
             using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
             {
-                dbresult = (from s in database.Submissions
-                            where s.Smeu == submission.Smeu
-                            orderby s.Date
-                            select s).FirstOrDefault();
-            }
+                Submission dbresult = (from s in database.Submissions
+                                       where s.Smeu == smeu
+                                       orderby s.Date
+                                       select s).FirstOrDefault();
 
-            if (dbresult != null)
-            {
-                // return the result if there is already such a smeu
-                return dbresult;
-            }
 
-            // add the submission to the database if none existed yet
-            using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
-            {
-                database.Submissions.Add(submission);
-                await database.SaveChangesAsync();
-            }
-            return submission;
-        }
-
-        public async Task Remove(Submission submission)
-        {
-
-            try
-            {
-                // try remove the submission from the discord
-                IMessage message = await (client.GetChannel(settings.SmeuChannelId) as IMessageChannel).GetMessageAsync(submission.MessageId);
-                if (message != null)
+                if (dbresult != null)
                 {
-                    await message.DeleteAsync();
+                    // create a duplicate if an original already exists
+                    database.Duplicates.Add(new Duplicate { Author = author, Date = date, MessageId=messageid, Original = dbresult });
+                    await database.SaveChangesAsync();
+                    return false;
                 }
                 else
                 {
-                    await logger.LogAsync(new LogMessage(LogSeverity.Warning, "SmeuService", $"Attempted to delete message from discord with id '{submission.MessageId}', but failed: Could not find the message."));
+                    // otherwise add it to the database
+                    database.Submissions.Add(new Submission { Author = author, Date = date, MessageId = messageid, Smeu = smeu });
+                    await database.SaveChangesAsync();
+                    return true;
                 }
-            }
-            catch (Exception e)
-            {
-                await logger.LogAsync(new LogMessage(LogSeverity.Warning, "SmeuService", $"Attempted to delete message from discord with id '{submission.MessageId}', but failed.", e));
-            }
-
-            // remove from database
-            using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
-            {
-                database.Submissions.RemoveRange(submission);
-                await database.SaveChangesAsync();
             }
         }
 
-        private Suspension GetUserSuspension(SocketUser user)
+        public async Task<bool> RemoveAsync(string smeu, ulong author)
+        {
+            using(SmeuContext database = smeuBaseFactory.GetSmeuBase())
+            {
+                // first check if this combination is a duplicate
+                Duplicate duplicate = (from d in database.Duplicates
+                                       where d.Author == author && d.Original.Smeu == smeu
+                                       orderby d.Date descending
+                                       select d).FirstOrDefault();
+
+                if(duplicate != null)
+                {
+                    // remove the duplicate
+                    IMessage msg = await (client.GetChannel(settings.SmeuChannelId) as IMessageChannel).GetMessageAsync(duplicate.MessageId);
+                    await msg.DeleteAsync();
+
+                    database.Duplicates.Remove(duplicate);
+                    await database.SaveChangesAsync();
+                    return true;
+                }
+
+                // check if there is an original
+                Submission submission = await (from s in database.Submissions
+                                               where s.Author == author && s.Smeu == smeu
+                                               select s).Include(x => x.Duplicates).FirstOrDefaultAsync();
+
+                if(submission != null)
+                {
+                    // remove the original message
+                    IMessage msg = await (client.GetChannel(settings.SmeuChannelId) as IMessageChannel).GetMessageAsync(submission.MessageId);
+                    await msg.DeleteAsync();
+
+                    // check if a duplicate must take this submission's place
+                    if(submission.Duplicates.Count > 0)
+                    {
+                        duplicate = (from d in submission.Duplicates
+                                     orderby d.Date ascending
+                                     select d).First();
+
+                        // change details of this submission to the first duplicate
+                        submission.Author = duplicate.Author;
+                        submission.Date = duplicate.Date;
+                        submission.MessageId = duplicate.MessageId;
+
+                        database.Submissions.Update(submission);
+                        database.Duplicates.Remove(duplicate);
+                    }
+                    else
+                    {
+                        database.Submissions.Remove(submission);
+                    }
+
+                    await database.SaveChangesAsync();
+                    return true;
+                }
+
+                return false;
+            }
+        }
+
+        private Suspension GetUserSuspension(ulong user)
         {
             // check if there is an entry in the suspensions table for given user
             using (SmeuContext database = smeuBaseFactory.GetSmeuBase())
             {
                 return (from s in database.Suspensions
-                        where s.User == user.Id
+                        where s.Revoker == null && s.User == user
                         select s).FirstOrDefault();
             }
         }

@@ -1,18 +1,12 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace SmeuBase.Migrations.MySQL
+namespace SmeuBase.Migrations.Sqlite
 {
     public partial class AddDuplicatesTable : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "DuplicateId",
-                table: "Suspensions",
-                nullable: true);
-
             migrationBuilder.AddColumn<ulong>(
                 name: "Revoker",
                 table: "Suspensions",
@@ -29,9 +23,10 @@ namespace SmeuBase.Migrations.MySQL
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("Sqlite:Autoincrement", true),
                     Author = table.Column<ulong>(nullable: false),
                     Date = table.Column<DateTime>(nullable: false),
+                    MessageId = table.Column<ulong>(nullable: false),
                     OriginalId = table.Column<int>(nullable: false),
                     SuspensionId = table.Column<int>(nullable: true)
                 },
@@ -68,10 +63,6 @@ namespace SmeuBase.Migrations.MySQL
         {
             migrationBuilder.DropTable(
                 name: "Duplicates");
-
-            migrationBuilder.DropColumn(
-                name: "DuplicateId",
-                table: "Suspensions");
 
             migrationBuilder.DropColumn(
                 name: "Revoker",
