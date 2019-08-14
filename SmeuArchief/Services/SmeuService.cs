@@ -9,7 +9,6 @@ namespace SmeuArchief.Services
 {
     public class SmeuService
     {
-        private readonly IServiceProvider services;
         private readonly DiscordSocketClient client;
         private readonly SmeuBaseFactory smeuBaseFactory;
         private readonly Settings settings;
@@ -18,9 +17,8 @@ namespace SmeuArchief.Services
         private readonly Emoji acceptEmoji = new Emoji("\u2705");
         private readonly Emoji denyEmoji = new Emoji("\u274C");
 
-        public SmeuService(IServiceProvider services, DiscordSocketClient client, SmeuBaseFactory smeuBaseFactory, Settings settings, LogService logger)
+        public SmeuService(DiscordSocketClient client, SmeuBaseFactory smeuBaseFactory, Settings settings, LogService logger)
         {
-            this.services = services;
             this.client = client;
             this.smeuBaseFactory = smeuBaseFactory;
             this.settings = settings;

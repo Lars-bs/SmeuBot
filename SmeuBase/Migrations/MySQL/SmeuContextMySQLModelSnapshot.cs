@@ -17,6 +17,29 @@ namespace SmeuBase.Migrations.MySQL
                 .HasAnnotation("ProductVersion", "2.2.6-servicing-10079")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
+            modelBuilder.Entity("SmeuBase.Duplicate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<ulong>("Author");
+
+                    b.Property<DateTime>("Date");
+
+                    b.Property<int>("OriginalId");
+
+                    b.Property<int?>("SuspensionId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OriginalId");
+
+                    b.HasIndex("SuspensionId")
+                        .IsUnique();
+
+                    b.ToTable("Duplicates");
+                });
+
             modelBuilder.Entity("SmeuBase.Submission", b =>
                 {
                     b.Property<int>("Id")
@@ -43,14 +66,35 @@ namespace SmeuBase.Migrations.MySQL
 
                     b.Property<DateTime>("Date");
 
+                    b.Property<int?>("DuplicateId");
+
                     b.Property<string>("Reason")
                         .IsRequired();
+
+                    b.Property<ulong?>("Revoker");
+
+                    b.Property<ulong>("Suspender");
 
                     b.Property<ulong>("User");
 
                     b.HasKey("Id");
 
                     b.ToTable("Suspensions");
+                });
+
+            modelBuilder.Entity("SmeuBase.Duplicate", b =>
+                {
+                    b.HasOne("SmeuBase.Submission", "Original")
+                        .WithMany("Duplicates")
+                        .HasForeignKey("OriginalId")
+                        .HasConstraintName("ForeignKey_Duplicate_Submission")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SmeuBase.Suspension", "Suspension")
+                        .WithOne("Duplicate")
+                        .HasForeignKey("SmeuBase.Duplicate", "SuspensionId")
+                        .HasConstraintName("ForeignKey_Duplicate_Suspension")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 #pragma warning restore 612, 618
         }

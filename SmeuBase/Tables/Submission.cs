@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace SmeuBase
@@ -17,5 +18,7 @@ namespace SmeuBase
         public DateTime Date { get; set; }
 
         public ulong MessageId { get; set; }
+
+        public ICollection<Duplicate> Duplicates { get; set; }
     }
 }

@@ -8,18 +8,16 @@ namespace SmeuArchief.Services
 {
     public class LogService
     {
-        private readonly IServiceProvider services;
         private readonly DiscordSocketClient client;
         private readonly CommandService commands;
 
-        public LogService(IServiceProvider services, DiscordSocketClient client, CommandService commands)
+        public LogService(DiscordSocketClient client, CommandService commands)
         {
-            this.services = services;
             this.client = client;
             this.commands = commands;
 
-            client.Log += LogAsync;
-            commands.Log += LogAsync;
+            this.client.Log += LogAsync;
+            this.commands.Log += LogAsync;
         }
 
         public async Task LogAsync(LogMessage arg)

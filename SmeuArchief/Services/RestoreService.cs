@@ -9,14 +9,12 @@ namespace SmeuArchief.Services
 {
     public class RestoreService
     {
-        private readonly IServiceProvider services;
         private readonly DiscordSocketClient client;
         private readonly SmeuBaseFactory smeuBaseFactory;
         private readonly LogService logger;
 
-        public RestoreService(IServiceProvider services, DiscordSocketClient client, SmeuBaseFactory smeuBaseFactory, LogService logger)
+        public RestoreService(DiscordSocketClient client, SmeuBaseFactory smeuBaseFactory, LogService logger)
         {
-            this.services = services;
             this.client = client;
             this.smeuBaseFactory = smeuBaseFactory;
             this.logger = logger;
