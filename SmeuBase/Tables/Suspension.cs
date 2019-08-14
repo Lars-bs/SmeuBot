@@ -15,6 +15,15 @@ namespace SmeuBase
         [Required]
         public string Reason { get; set; }
 
+        public Duplicate Duplicate { get; set; }
+
+        public ulong Suspender { get; set; }
+
+        public ulong? Revoker { get; set; }
+
+
+
+
         public override string ToString()
         {
             return $"{Date:d-MMMM-yyyy H:mm} UTC → \"{Reason}\"";

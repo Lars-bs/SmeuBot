@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SmeuArchief.Utilities
 {
@@ -10,7 +8,7 @@ namespace SmeuArchief.Utilities
         {
             int[,] d = new int[first.Length + 1, second.Length + 1];
 
-            for(int i = 1; i < first.Length + 1; i++)
+            for (int i = 1; i < first.Length + 1; i++)
             {
                 d[i, 0] = i;
             }
@@ -20,9 +18,9 @@ namespace SmeuArchief.Utilities
                 d[0, j] = j;
             }
 
-            for(int j = 1; j < second.Length + 1; j++)
+            for (int j = 1; j < second.Length + 1; j++)
             {
-                for(int i = 1; i < first.Length + 1; i++)
+                for (int i = 1; i < first.Length + 1; i++)
                 {
                     int cost = (first[i - 1] == second[j - 1]) ? 0 : 1;
                     d[i, j] = Math.Min(Math.Min(d[i - 1, j], d[i, j - 1]) + 1, d[i - 1, j - 1] + cost);
