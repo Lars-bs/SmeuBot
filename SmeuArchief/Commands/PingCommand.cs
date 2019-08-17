@@ -3,12 +3,16 @@ using System.Threading.Tasks;
 
 namespace SmeuArchief.Commands
 {
-    public class PingCommand : ModuleBase<SocketCommandContext>
+    [Name("Smeu module")]
+    public partial class SmeuModule : ModuleBase<SocketCommandContext>
     {
-        [Command("ping"), Summary("Returns a message")]
+        [Command("ping"), Summary("Laat je weten of de bot nog leeft")]
         public async Task Ping()
         {
-            await ReplyAsync($"Hallo {Context.User.Mention}!");
+            using (var typing = Context.Channel.EnterTypingState())
+            {
+                await ReplyAsync($"Hallo {Context.User.Mention}!");
+            }
         }
     }
 }

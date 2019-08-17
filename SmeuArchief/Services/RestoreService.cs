@@ -9,14 +9,12 @@ namespace SmeuArchief.Services
 {
     public class RestoreService
     {
-        private readonly IServiceProvider services;
         private readonly DiscordSocketClient client;
         private readonly SmeuBaseFactory smeuBaseFactory;
         private readonly LogService logger;
 
-        public RestoreService(IServiceProvider services, DiscordSocketClient client, SmeuBaseFactory smeuBaseFactory, LogService logger)
+        public RestoreService(DiscordSocketClient client, SmeuBaseFactory smeuBaseFactory, LogService logger)
         {
-            this.services = services;
             this.client = client;
             this.smeuBaseFactory = smeuBaseFactory;
             this.logger = logger;
@@ -48,7 +46,7 @@ namespace SmeuArchief.Services
                     context.Database.Migrate();
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 await logger.LogAsync(new LogMessage(LogSeverity.Critical, "RestoreService", "Attempted to migrate the database, but failed.", e));
                 Environment.Exit(-1);
