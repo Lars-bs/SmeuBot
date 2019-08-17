@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore.Internal;
 using SmeuImporter.Domain;
 using Submission = SmeuBase.Submission;
 
@@ -61,7 +63,7 @@ namespace SmeuImporter.Services.Implementation
             };
         }
 
-        public bool IsUniqueSmeu(IReadOnlyCollection<SmeuBase.Submission> fuzzySearchResults, Submission submission)
+        public bool IsUniqueSmeu(IReadOnlyCollection<Submission> fuzzySearchResults, Submission submission)
         {
             Console.WriteLine($"Searched the database for Smeu's like: {submission.Smeu}, found the following results");
             foreach (var fuzzySearchResult in fuzzySearchResults)
@@ -70,6 +72,28 @@ namespace SmeuImporter.Services.Implementation
             }
 
             return AskUserYesOrNo("Is this Smeu Unique?");
+        }
+
+        public ulong AskForAuthor(string parsedAuthor, List<User> userMap)
+        {
+            Console.Clear();
+            Console.WriteLine($"The author {parsedAuthor} is not mapped to a discordId. Please select the correct Author");
+            
+            for (var i = 0; i < userMap.Count; i++)
+            {
+                Console.WriteLine($"[{i}] ({userMap[i].Names.Join(", ")})");
+            }
+
+            var id = -1;
+            do
+            {
+                Console.WriteLine("Please select the correct name by entering the corresponding Id:");
+                var input = Console.ReadLine();
+                int.TryParse(input, out id);
+
+            } while (id > -1 && id < userMap.Count);
+
+            return userMap[id].Id;
         }
     }
 }

@@ -6,7 +6,6 @@ using CommandLine;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SmeuImporter.Services;
-using SmeuImporter.Services.Implementation;
 
 namespace SmeuImporter
 {
@@ -18,15 +17,15 @@ namespace SmeuImporter
     internal class Main:IMain
     {
         private readonly ILogger<Main> logger;
-        private readonly ISmeuEvaluationService smeuEvaluationService;
+        private readonly IWhatsAppChatService whatsAppChatService;
         private IEnumerable<Error>? parseErrors;
         private CommandLineOptions? options;
 
-        public Main(ILogger<Main> logger, ISmeuEvaluationService smeuEvaluationService)
+        public Main(ILogger<Main> logger, IWhatsAppChatService whatsAppChatService)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.smeuEvaluationService = smeuEvaluationService 
-                                         ?? throw new ArgumentNullException(nameof(smeuEvaluationService));
+            this.whatsAppChatService = whatsAppChatService 
+                                         ?? throw new ArgumentNullException(nameof(whatsAppChatService));
         }
         public async Task ExecuteAsync(string[] args, IConfiguration configuration)
         {
@@ -34,7 +33,7 @@ namespace SmeuImporter
             Console.WriteLine("---------- SmeuImporter ----------");
             Console.WriteLine("Action: Parsing CommandLine Arguments.");
             
-            CommandLine.Parser.Default.ParseArguments<CommandLineOptions>(args)
+            Parser.Default.ParseArguments<CommandLineOptions>(args)
                 .WithNotParsed(errors => this.parseErrors = errors)
                 .WithParsed(parsedOptions => this.options = parsedOptions );
             if ( options is null || parseErrors != null && parseErrors.Any())
@@ -48,7 +47,7 @@ namespace SmeuImporter
             Console.WriteLine("Starting logging");
             
             logger.LogInformation("---- LOGGING STARTED ----");
-            await smeuEvaluationService.EvaluateChat(options.WhatsappLogDirectory);
+            await whatsAppChatService.EvaluateChat(options.WhatsappLogDirectory);
             logger.LogInformation("---- LOGGING STOPPED ----");
             
             Console.WriteLine("Logging stopped");

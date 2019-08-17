@@ -9,5 +9,6 @@ namespace SmeuImporter.Services
         bool IsSmeu(ChatEntry chatEntry);
         Submission ConfirmChatEntryData(ChatEntry chatEntry);
         bool IsUniqueSmeu(IReadOnlyCollection<SmeuBase.Submission> fuzzySearchResults, Submission submission);
+        ulong AskForAuthor(string parsedAuthor, List<User> userMap);
     }
 }

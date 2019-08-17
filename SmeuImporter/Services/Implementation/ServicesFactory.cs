@@ -11,7 +11,7 @@ namespace SmeuImporter.Services.Implementation
         {
             serviceCollection.AddScoped<IMain, Main>();
             serviceCollection.AddScoped<IChatEntryReviewService, ChatEntryReviewService>();
-            serviceCollection.AddScoped<ISmeuEvaluationService, SmeuEvaluationService>();
+            serviceCollection.AddScoped<IWhatsAppChatService, WhatsAppChatService>();
             
             serviceCollection 
                 .AddLogging(loggingBuilder =>

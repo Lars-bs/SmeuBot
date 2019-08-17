@@ -2,7 +2,7 @@
 
 namespace SmeuImporter.Services
 {
-    public interface ISmeuEvaluationService
+    public interface IWhatsAppChatService
     {
         Task EvaluateChat(string whatsAppChatFilePath);
     }

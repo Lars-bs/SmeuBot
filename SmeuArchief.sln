@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmeuBase", "SmeuBase\SmeuBa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmeuImporter", "SmeuImporter\SmeuImporter.csproj", "{C79CA302-307C-453B-BD65-AA1B8AC4247C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmeuImporter.Tests", "SmeuImporter.Tests\SmeuImporter.Tests.csproj", "{1168F0BD-007D-4CC0-A095-8D5B03B1D60E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{C79CA302-307C-453B-BD65-AA1B8AC4247C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C79CA302-307C-453B-BD65-AA1B8AC4247C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C79CA302-307C-453B-BD65-AA1B8AC4247C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1168F0BD-007D-4CC0-A095-8D5B03B1D60E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1168F0BD-007D-4CC0-A095-8D5B03B1D60E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1168F0BD-007D-4CC0-A095-8D5B03B1D60E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1168F0BD-007D-4CC0-A095-8D5B03B1D60E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
